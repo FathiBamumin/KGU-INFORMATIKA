@@ -47,6 +47,10 @@ const Classes = () => {
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // View Modal State
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingClass, setViewingClass] = useState<ClassItem | null>(null);
   
   // Create Modal State
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -325,6 +329,16 @@ const Classes = () => {
     setShowEditForm(true);
   };
 
+  const handleViewClass = (classItem: ClassItem) => {
+    setViewingClass(classItem);
+    setShowViewModal(true);
+  };
+
+  const closeViewModal = () => {
+    setShowViewModal(false);
+    setViewingClass(null);
+  };
+
   const handleUpdateClass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingClass) return;
@@ -599,7 +613,12 @@ const Classes = () => {
 
                       {/* Action Buttons */}
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="flex-1 h-8 sm:h-9 text-xs sm:text-sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-8 sm:h-9 text-xs sm:text-sm"
+                          onClick={() => handleViewClass(classItem)}        // ← tambahkan ini
+                        >
                           <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                           <span className="hidden sm:inline">Lihat</span>
                           <span className="sm:hidden">Detail</span>
@@ -760,6 +779,43 @@ const Classes = () => {
           </>
         )}
       </AnimatePresence>
+
+<AnimatePresence>
+  {showViewModal && viewingClass && (
+    <>
+      <motion.div
+        className="fixed inset-0 bg-black/50 z-40"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={closeViewModal}
+      />
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+      >
+        <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle>Detail Kelas: {viewingClass.name}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p><strong>Mata Pelajaran:</strong> {viewingClass.subject}</p>
+            <p><strong>Deskripsi:</strong> { viewingClass.description || '–' }</p>
+            <p><strong>Guru:</strong> {viewingClass.teacherUsername}</p>
+            <p><strong>Dibuat:</strong> {new Date(viewingClass.createdAt).toLocaleDateString()}</p>
+            {/* dan statistik jika ada di classStats[viewingClass.id] */}
+            <div className="text-right mt-4">
+              <Button onClick={closeViewModal} variant="outline">Tutup</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </>
+  )}
+</AnimatePresence>
+
 
       {/* Edit Class Modal */}
       <AnimatePresence>
